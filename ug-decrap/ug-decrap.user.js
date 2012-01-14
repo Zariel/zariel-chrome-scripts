@@ -11,6 +11,12 @@ function hideClass(className) {
     }
 }
 
+function hideID(id) {
+    var elem = document.getElementById(id);
+
+    elem.style.display = "none";
+}
+
 function cleanTabs() {
     var nodes = document.getElementsByClassName("ugtab2");
 
@@ -97,6 +103,22 @@ function cleanTabDisplay() {
     hideClass("tabinfo");
     hideClass("tab_scroll");
     hideClass("tdsug");
+
+    hideID("gpa-container");
+
+    var gpa = document.getElementById("gpa-container");
+}
+
+function cleanBands() {
+    var tds = document.getElementsByTagName("td");
+
+    for(td in tds) {
+        var r = tds[td];
+        if(r.width == 310 && r.bgColor == "#141414" && r.vAlign == "top") {
+            r.parentNode.deleteCell(r.cellIndex);
+            break;
+        }
+    }
 }
 
 var url = document.URL;
@@ -105,6 +127,8 @@ if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/search\.php\?/)) {
     cleanSearch();
 } else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/tabs\//)) {
     cleanTabs();
+} else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/bands\//)) {
+    cleanBands();
 } else if(url.match(/^(http:\/\/)?tabs\.ultimate\-guitar\.com\//)) {
     cleanTabDisplay();
 } else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/?$/)) {
