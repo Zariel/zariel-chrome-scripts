@@ -1,6 +1,7 @@
 // ==UserScript==
 // @match http://*.reddit.com/*
 // @match https://reddit.com/*
+// @run_at document_start
 // ==/UserScript==
 
 function init() {
@@ -10,8 +11,8 @@ function init() {
 }
 
 function setup() {
-    console.log("Setup state = " + document.readyState);
-    if(document.readyState == "complete") {
+    var state = document.readyState;
+    if(state == "complete" || state == "interactive") {
         init();
     } else {
         window.onload = init;

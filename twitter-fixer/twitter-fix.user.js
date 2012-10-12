@@ -1,6 +1,7 @@
 // ==UserScript==
 // @match http://twitter.com/*
 // @match https://twitter.com/*
+// @run_at document_start
 // ==/UserScript==
 
 // Bceause new twitter only uses 50% of my screen, which is useless
@@ -31,8 +32,8 @@ function clean() {
 }
 
 function setup() {
-    console.log("Setup state = " + document.readyState);
-    if(document.readyState == "complete") {
+    var state = document.readyState;
+    if(state == "complete" || state == "interactive") {
         init();
     } else {
         window.onload = init;
