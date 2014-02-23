@@ -1,31 +1,55 @@
 // ==UserScript==
-// @match http://www.ultimate-guitar.com/*
-// @match http://tabs.ultimate-guitar.com/*
-// @run_at document_start
+// @name UG Decrap
+// @match http://*.ultimate-guitar.com/*
+// @match https://*.ultimate-guitar.com/*
+// @run_at document_end
 // ==/UserScript==
 
-function hideClass(className) {
+
+var removeNode = function(node) {
+    node.parentNode.removeChild(node);
+}
+
+var hideClass = function(className) {
     var elem = document.getElementsByClassName(className);
 
     for(var j = 0; j < elem.length; j++) {
-        elem[j].style.display = "none";
+        //elem[j].style.display = "none";
+        removeNode(elem[j]);
     }
 }
 
-function hideID(id) {
+var hideID = function(id) {
     var elem = document.getElementById(id);
 
-    elem.style.display = "none";
+	removeNode(elem);
 }
 
-function cleanTabs() {
+var fixStripes = function(table, className) {
+    var rows = table.rows;
+    var stripe = true;
+
+    for(var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+
+        if(!stripe) {
+            row.className = null;
+        } else {
+            row.className = className;
+        }
+
+        stripe = !stripe;
+    }
+}
+
+var cleanTabs = function() {
     var nodes = document.getElementsByClassName("ugtab2");
 
     var table = null;
 
     var i = 0;
     while(nodes.length > 0) {
-        if(table == null) {
+        if(table === null) {
             table = nodes[i].parentNode.parentNode.parentNode.parentNode;
         }
 
@@ -34,12 +58,12 @@ function cleanTabs() {
         table.deleteRow(row.rowIndex);
     }
 
-    if(table != null) {
+    if(table !== null) {
         fixStripes(table, "tr");
     }
 }
 
-function removeRow(table, index) {
+var removeRow = function(table, index) {
     var row = table.rows[index];
     var artist = row.cells[0];
 
@@ -52,7 +76,7 @@ function removeRow(table, index) {
     table.deleteRow(index);
 }
 
-function cleanSearch() {
+var cleanSearch = function() {
     var nodes = document.getElementsByClassName("tresults");
 
     if(nodes.length ==  0) {
@@ -75,42 +99,57 @@ function cleanSearch() {
     fixStripes(table, "stripe");
 }
 
-function fixStripes(table, className) {
-    var rows = table.rows;
-    var stripe = true;
-
-    for(var i = 0; i < rows.length; i++) {
-        var row = rows[i];
-
-        if(!stripe) {
-            row.className = null;
-        } else {
-            row.className = className;
-        }
-
-        stripe = !stripe;
+var removeSearchBanner = function() {
+    var a = document.getElementById("advanced_search");
+    if(a == undefined) {
+        return;
     }
+
+    var trs = a.getElementsByTagName("tr");
+    if(trs != undefined && trs.length > 0) {
+        removeNode(trs[0]);
+   }
 }
 
-function cleanHomePage() {
-    var hide = [ "boxx" ];
+var cleanHomePage = function() {
+    var hide = [ "boxx", "deal_and_img" ];
 
     for(var i = 0; i < hide.length; i++) {
         hideClass(hide[i]);
     }
+
+	var body = document.getElementsByTagName("body")[0];
+	for(var i = 0; i < body.childNodes.length; i++) {
+		var child = body.childNodes[i];
+		if(child.tagName === "DIV") {
+			var div = null;
+			if((div = child.getElementsByClassName("list_takeover")) !== undefined) {
+				removeNode(child);
+				break;
+			}
+		}
+	}
 }
 
-function cleanTabDisplay() {
+var cleanTabDisplay = function() {
+	console.log("Cleaning tab display");
     hideClass("tabinfo");
     hideClass("tab_scroll");
     hideClass("tdsug");
+    hideClass("tabpro_info");
+    hideClass("rd_l bottom_adv_red");
+    hideClass("tabpro_links");
+    hideClass("adv_bottom");
+	hideClass("trial_mess");
 
     hideID("gpa-container");
 
-    var gpa = document.getElementById("gpa-container");
+	var hider = document.getElementById('hide_player');
+	var tabProShit = hider.parentNode;
+	removeNode(tabProShit);
 }
 
-function cleanBands() {
+var cleanBands = function() {
     var tds = document.getElementsByTagName("td");
 
     for(td in tds) {
@@ -122,32 +161,29 @@ function cleanBands() {
     }
 }
 
-function init() {
-	var url = document.URL;
+var init = function() {
+    var url = document.URL;
+	console.log(url)
 
-	if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/search\.php\?/)) {
-	    cleanSearch();
-	} else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/tabs\//)) {
-	    cleanTabs();
-	} else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/bands\//)) {
-	    cleanBands();
-	} else if(url.match(/^(http:\/\/)?tabs\.ultimate\-guitar\.com\//)) {
-	    cleanTabDisplay();
-	} else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/?$/)) {
-	    cleanHomePage();
+    if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/search\.php\?/)) {
+        cleanSearch();
+    } else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/tabs\//)) {
+        cleanTabs();
+    } else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/bands\//)) {
+        cleanBands();
+    } else if(url.match(/^(http:\/\/)?tabs\.ultimate\-guitar\.com\//)) {
+        cleanTabDisplay();
+    } else if(url.match(/^(http:\/\/)?(www.)?ultimate\-guitar\.com\/?$/)) {
+        cleanHomePage();
 	}
 
-	hideClass("b headtbl");
+    hideClass("b headtbl");
+    removeSearchBanner();
 }
 
-
-function setup() {
-    var state = document.readyState;
-    if(state == "complete" || state == "interactive") {
-        init();
-    } else {
-        window.onload = init;
-    }
+var state = document.readyState;
+if(state == "complete" || state == "interactive") {
+	init();
+} else {
+	window.onload = init;
 }
-
-setup();
